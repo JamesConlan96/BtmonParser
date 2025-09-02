@@ -153,7 +153,7 @@ class BtmonParser():
                     if self.devices[mac]["name"]:
                         row.append(self.devices[mac]["name"])
                     else:
-                        row.append("Unknown")
+                        row.append(mac)
                     if self.devices[mac]["manufacturer"]:
                         row.append(self.devices[mac]["manufacturer"])
                     else:
