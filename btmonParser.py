@@ -75,7 +75,7 @@ class BtmonParser():
         file = file.resolve()
         logger.debug(f"Initiated parsing of input file '{file}'")
         try:
-            with file.open('r') as f:
+            with file.open('r', errors="replace") as f:
                 timestamp = ""
                 mac = ""
                 name = ""
@@ -119,6 +119,7 @@ class BtmonParser():
                             rssi = check.group(1)
                             continue
         except:
+            raise
             error = "Could not parse file"
             logger.error(error)
             raise Warning(error)
@@ -196,9 +197,9 @@ def genArgParser() -> argparse.ArgumentParser:
                         help="file to save output to", metavar="FILE")
     return parser
 
-def main() -> None:
+def main(cliArgs: list = sys.argv) -> None:
     """Main method"""
-    if len(sys.argv) == 1:
+    if len(cliArgs) == 1:
         genArgParser().print_usage()
         sys.exit()
     try:
