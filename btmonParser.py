@@ -159,12 +159,12 @@ class BtmonParser():
                         row.append(self.devices[mac]["manufacturer"])
                     else:
                         row.append("Unknown")
-                    if abs(self.devices[mac]['rssi']) > 255:
-                        row.append("Unknown")
-                    else:
-                        row.append(self.devices[mac]['rssi'])
+                    row.append(self.devices[mac]['rssi'])
                     rows.append(row)
-                rows.sort(key=lambda x: f"{x[-1]} {x[0]}")
+                rows.sort(key=lambda x: (x[-1], x[0]))
+                for row in rows:
+                    if row[-1] > 255:
+                        row[-1] = "Unknown"
                 f.write(tabulate(rows, headings, format))
                 logger.debug(f"Bluetooth device report written to '{outFile}'")
         except:
@@ -197,9 +197,9 @@ def genArgParser() -> argparse.ArgumentParser:
                         help="file to save output to", metavar="FILE")
     return parser
 
-def main(cliArgs: list = sys.argv) -> None:
+def main(cliArgs: list = sys.argv[1:]) -> None:
     """Main method"""
-    if len(cliArgs) == 1:
+    if len(cliArgs) < 1:
         genArgParser().print_usage()
         sys.exit()
     try:
