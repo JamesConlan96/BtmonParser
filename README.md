@@ -6,7 +6,7 @@ A parser for btmon output.
 
 It is recommended to install BtmonParser using [pipx](https://pipx.pypa.io/stable/):
 
-`pipx install git+https://github.com/JamesConlan96/BtmonParser`
+`pipx install git+https://github.com/JamesConlan96/BtmonParser.git`
 
 ## Usage
 
