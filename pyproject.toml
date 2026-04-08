@@ -1,0 +1,35 @@
+[build-system]
+requires = [
+    "setuptools"
+]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "BtmonParser"
+version = "1.0.0"
+description = "A parser for btmon output"
+readme = "README.md"
+requires-python = ">=3.13.11"
+license = "GPL-3.0-only"
+license-files = [
+    "LICENSE"
+]
+authors = [
+    {name = "Jamesconlan96", email = "btmonparser@jamesconlan.co.uk"}
+]
+keywords = [
+    "btmon",
+    "bluetooth"
+]
+dependencies = [
+    "tabulate >= 0.9.0"
+]
+
+[project.urls]
+homepage = "https://github.com/JamesConlan96/BtmonParser"
+source = "https://github.com/JamesConlan96/BtmonParser"
+download = "https://github.com/JamesConlan96/WiSite/releases/BtmonParser"
+issues = "https://github.com/JamesConlan96/WiSite/BtmonParser"
+
+[project.scripts]
+btmonparser = "btmonParser:main"
