@@ -2,12 +2,12 @@
 
 
 import argparse
+from datetime import datetime
 import logging
 from pathlib import Path
 import sys
 from tabulate import tabulate, tabulate_formats
 import re
-import yaml
 
 
 logger = logging.getLogger(__name__)
@@ -19,6 +19,7 @@ class BtmonParser():
     def __init__(self) -> None:
         """Initialises a btmon parser object"""
         self.devices = {}
+        self.reportedDevices = 0
         logger.debug("Btmon parser initialised")
 
     def _addDeviceRecord(self, timestamp: str, mac: str, name: str,
@@ -33,7 +34,13 @@ class BtmonParser():
         mac = mac.strip().upper()
         if not mac:
             return
-        timestamp = float(timestamp)
+        try:
+            timestamp = float(timestamp)
+        except:
+            try:
+                timestamp = datetime.strptime(timestamp, "%H:$M:%S.%f")
+            except:
+                timestamp = datetime.strptime(timestamp, "%Y-%m-%d %H:%M:%S.%f")
         rssi = int(rssi) if rssi else 5000
         if mac in self.devices:
             if timestamp < self.devices[mac]["firstTime"]:
@@ -119,13 +126,12 @@ class BtmonParser():
                             rssi = check.group(1)
                             continue
         except:
-            raise
             error = "Could not parse file"
             logger.error(error)
             raise Warning(error)
         logger.debug(f"Parsing complete")
 
-    def report(self, outFile: Path, format: str = "github",
+    def report(self, outFile: Path, minRssi: int, format: str = "github",
                overwrite: bool = False) -> None:
         """Generates ouput files
         @param outFile: File to save output to
@@ -148,19 +154,24 @@ class BtmonParser():
                             "Common Name", "Manufacturer", "RSSI"]
                 rows = []
                 for mac in self.devices.keys():
-                    row = [mac]
-                    row.append(self.devices[mac]["firstTime"])
-                    row.append(self.devices[mac]["lastTime"])
-                    if self.devices[mac]["name"]:
-                        row.append(self.devices[mac]["name"])
-                    else:
-                        row.append(mac)
-                    if self.devices[mac]["manufacturer"]:
-                        row.append(self.devices[mac]["manufacturer"])
-                    else:
-                        row.append("Unknown")
-                    row.append(self.devices[mac]['rssi'])
-                    rows.append(row)
+                    if minRssi is not None and self.devices[mac]['rssi'] > 255:
+                        continue
+                    minRssi = -5000 if minRssi is None else minRssi
+                    if self.devices[mac]['rssi'] >= minRssi:
+                        row = [mac]
+                        row.append(self.devices[mac]["firstTime"])
+                        row.append(self.devices[mac]["lastTime"])
+                        if self.devices[mac]["name"]:
+                            row.append(self.devices[mac]["name"])
+                        else:
+                            row.append(mac)
+                        if self.devices[mac]["manufacturer"]:
+                            row.append(self.devices[mac]["manufacturer"])
+                        else:
+                            row.append("Unknown")
+                        row.append(self.devices[mac]['rssi'])
+                        rows.append(row)
+                        self.reportedDevices += 1
                 rows.sort(key=lambda x: (x[-1], x[0]))
                 for row in rows:
                     if row[-1] > 255:
@@ -168,6 +179,7 @@ class BtmonParser():
                 f.write(tabulate(rows, headings, format))
                 logger.debug(f"Bluetooth device report written to '{outFile}'")
         except:
+            raise
             error = f"Could not write to output file '{outFile}'"
             logger.error(error)
             raise Warning(error)
@@ -177,14 +189,16 @@ class BtmonParser():
         """Generates a summary of findings
         @return Summary of findings
         """
-        return f"Total bluetooth devices identified: {len(self.devices)}"
+        return f"Total bluetooth devices identified: {len(self.devices)}\n" + \
+        f"Bluetooth devices included in report: {self.reportedDevices}"
 
 
 def genArgParser() -> argparse.ArgumentParser:
     """Generates a CLI argument parser
     @return: CLI argument parser object
     """
-    parser = argparse.ArgumentParser(description="A parser for btmon output")
+    parser = argparse.ArgumentParser(description="A parser for btmon output",
+                                     prog=str(Path(__file__).name))
     parser.add_argument('-f', '--format', choices=tabulate_formats,
                         help="format for output tables (default: github)",
                         default="github")
@@ -195,6 +209,9 @@ def genArgParser() -> argparse.ArgumentParser:
                         help="overwrite existing output files without asking")
     parser.add_argument('-o', '--outFile', type=Path, action="store",
                         help="file to save output to", metavar="FILE")
+    parser.add_argument('-r', '--rssiMin', type=int, action="store",
+                        help="minimum RSSI value a record must have to be " +
+                        "included in the report")
     return parser
 
 def main(cliArgs: list = sys.argv[1:]) -> None:
@@ -211,11 +228,11 @@ def main(cliArgs: list = sys.argv[1:]) -> None:
             datefmt="%Y-%m-%d %H:%M:%S",
             handlers=[logHandlerStdout]
         )
-        args = genArgParser().parse_args()
+        args = genArgParser().parse_args(cliArgs)
         bp = BtmonParser()
         for file in args.inputFiles:
             bp.parse(file)
-        bp.report(args.outFile, args.format, args.noPrompt)
+        bp.report(args.outFile, args.rssiMin, args.format, args.noPrompt)
         print("\nParsing complete!\n", bp.summarise(), "", sep="\n")
     except Warning:
         sys.exit()
