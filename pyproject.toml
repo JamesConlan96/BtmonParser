@@ -33,3 +33,6 @@ issues = "https://github.com/JamesConlan96/WiSite/BtmonParser"
 
 [project.scripts]
 btmonparser = "btmonParser:main"
+
+[tool.setuptools]
+py-modules = ["btmonParser"]
