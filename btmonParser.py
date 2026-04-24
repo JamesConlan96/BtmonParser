@@ -179,7 +179,6 @@ class BtmonParser():
                 f.write(tabulate(rows, headings, format))
                 logger.debug(f"Bluetooth device report written to '{outFile}'")
         except:
-            raise
             error = f"Could not write to output file '{outFile}'"
             logger.error(error)
             raise Warning(error)
