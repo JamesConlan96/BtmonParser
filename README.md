@@ -12,8 +12,7 @@ It is recommended to install BtmonParser using [pipx](https://pipx.pypa.io/stabl
 
 ```
 usage: btmonParser.py [-h]
-                      [-f {asciidoc,double_grid,double_outline,fancy_grid,fancy_outline,github,grid,heavy_grid,heavy_outline,html,jira,latex,latex_booktabs,latex_longtable,latex_raw,mediawiki,mixed_grid,mixed_outline,moinmoin,orgtbl,outline,pipe,plain,presto,pretty,psql,rounded_grid,rounded_outline,rst,simple,simple_grid,simple_outline,textile,tsv,unsafehtml,youtrack}]
-                      -i FILE [FILE ...] [-n] [-o FILE] [-r RSSIMIN]
+                      [-f {asciidoc,double_grid,double_outline,fancy_grid,fancy_outline,github,grid,heavy_grid,heavy_outline,html,jira,latex,latex_booktabs,latex_longtable,latex_raw,mediawiki,mixed_grid,mixed_outline,moinmoin,orgtbl,outline,pipe,plain,presto,pretty,psql,rounded_grid,rounded_outline,rst,simple,simple_grid,simple_outline,textile,tsv,unsafehtml,youtrack}] -i FILE [FILE ...] [-n] -o FILE [-r RSSIMIN]
 
 A parser for btmon output
 

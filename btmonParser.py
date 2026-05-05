@@ -41,7 +41,7 @@ class BtmonParser():
                 timestamp = datetime.strptime(timestamp, "%H:$M:%S.%f")
             except:
                 timestamp = datetime.strptime(timestamp, "%Y-%m-%d %H:%M:%S.%f")
-        rssi = int(rssi) if rssi else 5000
+        rssi = int(rssi) if rssi else -5000
         if mac in self.devices:
             if timestamp < self.devices[mac]["firstTime"]:
                 self.devices[mac]["firstTime"] = timestamp
@@ -172,9 +172,9 @@ class BtmonParser():
                         row.append(self.devices[mac]['rssi'])
                         rows.append(row)
                         self.reportedDevices += 1
-                rows.sort(key=lambda x: (x[-1], x[0]))
+                rows.sort(key=lambda x: (x[-1], x[0]), reverse=True)
                 for row in rows:
-                    if row[-1] > 255:
+                    if row[-1] < -255:
                         row[-1] = "Unknown"
                 f.write(tabulate(rows, headings, format))
                 logger.debug(f"Bluetooth device report written to '{outFile}'")
@@ -207,7 +207,8 @@ def genArgParser() -> argparse.ArgumentParser:
     parser.add_argument('-n', '--noPrompt', action="store_true",
                         help="overwrite existing output files without asking")
     parser.add_argument('-o', '--outFile', type=Path, action="store",
-                        help="file to save output to", metavar="FILE")
+                        help="file to save output to", metavar="FILE",
+                        required=True)
     parser.add_argument('-r', '--rssiMin', type=int, action="store",
                         help="minimum RSSI value a record must have to be " +
                         "included in the report")
